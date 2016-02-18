@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en" data-ng-app="GoogleMapsDirectionWeather">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link rel="stylesheet" href="styles/style.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.4/angular.min.js" type="application/javascript"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=true"></script>
+    <script>
+
+    var start_loc=document.getElementById('startlocation').value;
+        source_text.value=start_loc;
+    </script>
+    <style>
+        #map-canvas {
+            width: 800px;
+            height: 600px;
+            margin-left: 20%;
+
+        }
+        .weatherModule {
+            background: #3498db;
+            height: 150px;
+            width: 700px;
+            margin-left: 20%;
+            /*border: 1px dashed #ccc;*/
+            padding: 1em;
+        }
+    </style>
+</head>
+<body>
+<div class="wrapp" ng-controller="googlemapoutput">
+    <div style="margin-left: 70%">
+    <a href="Login.html"><input type="button" style=" background:#2ecc71;width:60px;padding-top:5px;
+    padding-bottom:5px;color:white;border-radius:4px;border: #27ae60 1px solid;font-weight:800;
+    font-size:0.8em;" value="Logout"/></a>
+    </div>
+    <br>
+    <div class="row">
+        <input type="text" placeholder="Start Location" class="email"  ng-model="startlocation" id="startlocation"/>
+        <input type="text" placeholder="End Location" class="email" ng-model="endlocation" id="endlocation" />
+        <button id="btn" class="getdirbtn" ng-click="getWeather_Source();getWeather_Dest();calcRoute()">
+            Get Direction
+        </button>
+        <br/></br>
+    </div>
+    <div id="map-canvas" style="height: 400px;"></div>
+    <div class="weatherModule">
+        <div style="width: 40%;">
+        <p class="currentConditions" id="currentweather" ></p>
+        <div class="currentIcon" id="currentIcon"></div>
+        </div>
+        <div style="width: 20%"></div>
+        <div style="width: 40%">
+            <p class="currentConditions" id="currentweather_dest" ></p>
+            <div class="currentIcon" id="currentIcon_dest"></div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+<script>
+    angular.module('GoogleMapsDirectionWeather', [])
+            .controller('googlemapoutput', function ($scope,$http) {
+
+                var map;
+                var mapOptions;
+                var directionsDisplay = new google.maps.DirectionsRenderer({
+                    draggable: true
+                });
+                var directionsService = new google.maps.DirectionsService();
+
+                $scope.initialize = function () {
+                    var pos = new google.maps.LatLng(0, 0);
+                    var mapOptions = {
+                        zoom: 3,
+                        center: pos
+                    };
+
+                    map = new google.maps.Map(document.getElementById('map-canvas'),
+                            mapOptions);
+                };
+                $scope.calcRoute = function () {
+                    var end = document.getElementById('endlocation').value;
+                    var start = document.getElementById('startlocation').value;
+                   // alert("Start Location"+start+"EndLocation"+end);
+                    var request = {
+                        origin: start,
+                        destination: end,
+                        travelMode: google.maps.TravelMode.DRIVING
+                    };
+
+                    directionsService.route(request, function (response, status) {
+                        if (status == google.maps.DirectionsStatus.OK) {
+                            directionsDisplay.setMap(map);
+                            directionsDisplay.setDirections(response);
+                            console.log(status);
+                        }
+
+                    });
+                };
+                $scope.getWeather_Source = function() {
+                    var source=document.getElementById('startlocation').value;
+
+                    console.log(source.toString());
+                    $http.get('http://api.openweathermap.org/data/2.5/weather?q='+source+'&appid=379ebdd71e548870edfa66f91e5eeecc').success(function(data) {
+                        console.log(data);
+                        temp = data.main.temp;
+                        var fh=$scope.kelvintoFahrenheit(temp.toString()).toFixed(2);
+                        var ic=data.weather[0].icon;
+                        var icon_url="http://openweathermap.org/img/w/"+ic+".png";
+                        var desc = data.weather[0].description;
+                        document.getElementById('currentweather').innerHTML="Currently the temperature in "+source+" is "  + fh + " &deg; F and " + desc;
+                        document.getElementById('currentIcon').innerHTML="<img src='" + icon_url + "'/>";
+
+
+
+                    })
+                }
+                $scope.getWeather_Dest = function() {
+
+                    var destination=document.getElementById('endlocation').value;
+
+                    $http.get('http://api.openweathermap.org/data/2.5/weather?q='+destination+'&appid=379ebdd71e548870edfa66f91e5eeecc').success(function(data) {
+                        console.log(data);
+                        temp = data.main.temp;
+                        var fh=$scope.kelvintoFahrenheit(temp.toString()).toFixed(2);
+                        var ic=data.weather[0].icon;
+                        var icon_url="http://openweathermap.org/img/w/"+ic+".png";
+                        var desc = data.weather[0].description;
+                        document.getElementById('currentweather_dest').innerHTML="Currently the temperature in "+destination+" is " + fh + " &deg; F and " + desc;
+                        document.getElementById('currentIcon_dest').innerHTML="<img src='" + icon_url + "'/>";
+
+
+                    })
+                }
+                $scope.kelvintoFahrenheit=function(kelvin){
+
+                        return (kelvin - 273.15) * 1.8 + 32;
+
+                }
+
+                google.maps.event.addDomListener(window, 'load', $scope.initialize);
+
+            });
+
+
+
+</script>
