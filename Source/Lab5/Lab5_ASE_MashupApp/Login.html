@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="style.css">
+    <!--<script src="https://apis.google.com/js/platform.js" async defer></script>-->
+    <!--<script>-->
+        <!--function onSignIn(googleUser) {-->
+            <!--var profile = googleUser.getBasicProfile();-->
+            <!--console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.-->
+            <!--console.log('Name: ' + profile.getName());-->
+            <!--console.log('Image URL: ' + profile.getImageUrl());-->
+            <!--console.log('Email: ' + profile.getEmail());-->
+        <!--}-->
+    <!--</script>-->
+    <!--<meta name="google-signin-client_id" content="497729935057-4tcemca6ptvqbagssmj63ne8401nnmv3.apps.googleusercontent.com">-->
+</head>
+<body>
+<script>
+    window.fbAsyncInit = function() {
+        FB.init({
+            appId      : '237263546621353',
+            xfbml      : true,
+            version    : 'v2.5'
+        });
+        FB.getLoginStatus(function(response){
+            console.log(response.status.toString());
+        });
+    };
+
+    (function(d, s, id){
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) {return;}
+        js = d.createElement(s); js.id = id;
+        js.src = "//connect.facebook.net/en_US/sdk.js";
+        fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+
+    function login(){
+        FB.login(function(response)
+                {
+//                    if(response.status==='connected'){
+//                        document.getElementById('status').innerHTML='We are connected'
+//                        document.getElementById('login').style.visibility='hidden';
+//                    }else if(response.status==='not_authorized') {
+//                        document.getElementById('status').innerHTML='Not logged in'
+//                    }else {
+//                        document.getElementById('status').innerHTML='you arenot logged in--- different browser'
+//                    }
+                    if (response.authResponse)
+                    {
+                        document.getElementById('login').style.visibility=false;
+                        getInfo();
+
+                    } else
+                    {
+                        console.log('User cancelled login or did not fully authorize.');
+                    }
+                },{scope:'email,user_photos'}
+        );
+    }
+    function getInfo(){
+        FB.api('/me',function(response){
+
+                    console.log(response.toString());
+
+//                        var b = document.getElementById('name').value,
+//                    var nm=response.name,
+//                            url = 'http://localhost:63342/MyTestProject/h.html?name=' + encodeURIComponent(nm);
+//
+//                    document.location.href = url;
+
+                    var str="<b>Name</b> : "+response.name+"<br>";
+                    str +="<b>Link: </b>"+response.link+"<br>";
+                    str +="<b>Username:</b> "+response.username+"<br>";
+                    str +="<b>id: </b>"+response.id+"<br>";
+                    str +="<b>Email:</b> "+response.email+"<br>";
+                    str +="<input type='button' value='Get Photo' onclick='getPhoto();'/>";
+                    str +="<input type='button' value='Logout' onclick='Logout();'/>";
+            var name=response.name;
+//                    document.getElementById('status').innerHTML=str;
+            localStorage.setItem("Name",name);
+                    window.location.href='Home.html'
+                }
+        );
+    }
+    function Logout()
+    {
+        FB.logout(function(){document.location.reload();});
+
+    }
+    function getPhoto()
+    {
+        FB.api('/me/picture?type=normal', function(response) {
+            var str="<br/><b>Pic</b> : <img src='"+response.data.url+"'/>";
+            document.getElementById("status").innerHTML+=str;
+
+        });
+
+    }
+</script>
+
+<div id="status"></div>
+<!--<button onclick="getInfo()">Get Info</button>-->
+<div class="box">
+    <div class="social-wrap c"></div>
+    <h1>Login</h1>
+    <input type="email" name="email" placeholder="Username/Email"  class="text" id="uname"/>
+
+    <input type="password" name="Enter Password" placeholder="Password"  class="text"  id="pwd"/>
+    <button  id="login" >Login </button>
+    <button onclick="login()" id="login" >Login with Facebook</button>
+</div>
+</body>
+</html>
