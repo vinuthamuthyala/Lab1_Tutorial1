@@ -42,7 +42,7 @@ imageApp.config(function($stateProvider, $urlRouterProvider) {
     templateUrl: 'templates/Home.html',
       controller:'getweather'
   })
-    $urlRouterProvider.otherwise('/EnterCity');
+    $urlRouterProvider.otherwise('/firebase');
 });
 
 imageApp.controller("FirebaseController", function($scope, $state, $firebaseAuth) {
